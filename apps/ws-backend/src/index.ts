@@ -4,7 +4,7 @@ const server = new WebSocketServer({
     port:3001
 })
 
-server.on("Connection",async (socket)=>{
+server.on("connection",async (socket)=>{
    await client.user.create({
         data:{
             username:Math.random().toString(),
