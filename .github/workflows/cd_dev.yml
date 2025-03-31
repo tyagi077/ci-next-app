@@ -12,8 +12,9 @@ jobs:
         steps:
           - name: Setup SSH Key
             run: |
-              echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 --decode > ~/ssh_key
+              echo -n "${{ secrets.SSH_PRIVATE_KEY }}" | base64 --decode > ~/ssh_key
               chmod 600 ~/ssh_key
+              ls -la ~/ssh_key  # Check if the file exists and has correct permissions
 
           - name: SSH Into Server and Deploy
             run: |
