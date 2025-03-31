@@ -12,6 +12,7 @@ jobs:
         steps:
           - run: |
               echo "${{ secrets.SSH_PRIVATE_KEY}}" &> ~/ssh_key
+              mkdir .ssh
               echo "${{ secrets.KNOWN_HOSTS}}" &> ~/.ssh/known_hosts
               ssh -i ~/ssh_key ubuntu@13.60.216.136
               cd ci-next-app/ && git pull
