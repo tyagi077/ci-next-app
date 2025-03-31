@@ -7,15 +7,32 @@ on:
 jobs:
     redeploy_everything:
         runs-on: ubuntu-latest
-        name: Deploying everything to stagging
+        name: Deploying everything to staging
 
         steps:
-          - run: |
-              echo "${{ secrets.SSH_PRIVATE_KEY}}" &> ~/ssh_key
-              mkdir -p /home/runner/.ssh
-              ls /home/runner/.ssh
-              touch /home/runner/.ssh/known_hosts
-              echo "${{ secrets.KNOWN_HOSTS}}" &> /home/runner/.ssh/known_hosts
-              chmod 700 /home/runner/ssh_key
-              ssh -i ~/ssh_key ubuntu@13.60.216.136 -t " cd ci-next-app/ && git pull origin main && pnpm install && pnpm run build && pm2 restart fe-server && pm2 restart http-backend && pm2 restart ws-backend "
-              
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Setup SSH and Known Hosts
+              run: |
+                echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/ssh_key
+                chmod 600 ~/ssh_key
+
+                # Create .ssh directory if it doesn't exist
+                mkdir -p ~/.ssh
+
+                # Dynamically add the server's SSH key to known_hosts
+                ssh-keyscan -H 13.60.216.136 >> ~/.ssh/known_hosts
+
+            - name: SSH Into Server and Deploy
+              run: |
+                ssh -o StrictHostKeyChecking=no -i ~/ssh_key ubuntu@13.60.216.136 << 'EOF'
+                cd ci-next-app/
+                git pull origin main
+                pnpm install
+                pnpm run build
+                pm2 restart fe-server
+                pm2 restart http-backend
+                pm2 restart ws-backend
+                EOF
+              shell: bash
