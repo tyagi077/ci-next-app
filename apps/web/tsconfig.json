@@ -1,6 +1,7 @@
 {
-  "extends": "@repo/typescript-config/nextjs.json",
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
+    "jsx": "preserve", // or "react-jsx" for React 17+
     "plugins": [
       {
         "name": "next"
