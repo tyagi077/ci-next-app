@@ -1,31 +1,30 @@
-name: Deploy to staging
+name: Deploy to EC2
+
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  redeploy_everything:
+  deploy:
+    name: Push to EC2
     runs-on: ubuntu-latest
-    name: Deploying everything to the staging cluster
+
     steps:
-      - run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/ssh_key
-          chmod 600 ~/ssh_key
-          mkdir -p /home/runner/.ssh
-          touch /home/runner/.ssh/known_hosts
-          echo "${{ secrets.KNOWN_HOSTS }}" > /home/runner/.ssh/known_hosts
-          chmod 600 /home/runner/.ssh/known_hosts
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 51.21.196.144
+          username: ubuntu
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          port: 22
+          script: |
+            cd ci-next-app
+            git pull origin main
+            pnpm install
+            pnpm run build
+            
           
-          ssh -i ~/ssh_key ubuntu@13.60.216.136 -t "
-            export NVM_DIR=\"$HOME/.nvm\";
-            [ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\";
-            [ -s \"$NVM_DIR/bash_completion\" ] && \. \"$NVM_DIR/bash_completion\";
-            cd ci-next-app/ &&
-            git pull origin main &&
-            npm install -g pnpm pm2 &&
-            pnpm install &&
-            pnpm run build &&
-            pm2 restart fe-sever &&
-            pm2 restart http-sever &&
-            pm2 restart ws-sever
-          "
