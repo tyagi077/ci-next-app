@@ -19,7 +19,7 @@ jobs:
         with:
           host: 51.21.196.144
           username: ubuntu
-          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
             cd ci-next-app
